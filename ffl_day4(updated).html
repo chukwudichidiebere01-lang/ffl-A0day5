@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1">
+<title>Fast French Lab — Day 5</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#FFF8F0;color:#3D2B1F;font-size:16px;min-height:100vh}
+:root{--br:#5C3D2E;--am:#C68B3C;--cr:#FAF3E0;--lt:#FFF8F0;--gn:#27ae60;--rd:#e74c3c;--gy:#888;--wm:#8B5E3C}
+/* HEADER */
+.hdr{background:var(--br);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;box-shadow:0 2px 12px rgba(92,61,46,.4)}
+.logo{color:#fff;font-weight:900;font-size:.95rem;letter-spacing:2px}.logo em{color:var(--am);font-style:normal}
+.pill{background:var(--am);color:var(--br);font-weight:800;font-size:.75rem;padding:4px 12px;border-radius:20px}
+.prog-wrap{display:flex;flex-direction:column;align-items:center;gap:2px}
+.prog-lbl{color:rgba(255,255,255,.55);font-size:.6rem}
+.prog-track{width:100px;height:6px;background:rgba(255,255,255,.2);border-radius:10px}
+.prog-bar{height:6px;background:var(--am);border-radius:10px;transition:width .5s ease;width:0%}
+/* WRAP */
+.wrap{max-width:680px;margin:0 auto;padding:14px 12px 100px}
+/* DOTS */
+.dots{display:flex;gap:6px;justify-content:center;margin-bottom:16px;flex-wrap:wrap}
+.dot{width:32px;height:32px;border-radius:50%;background:#e8d5c0;color:#888;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:800;cursor:pointer;transition:all .3s;border:2px solid transparent;min-width:44px;min-height:44px}
+.dot.active{background:var(--br);color:#fff;border-color:var(--am);transform:scale(1.15)}
+.dot.done{background:var(--am);color:var(--br)}
+/* CARD */
+.card{background:#fff;border-radius:18px;padding:20px;box-shadow:0 4px 20px rgba(92,61,46,.1);display:none}
+.card.show{display:block;animation:slideIn .35s ease}
+@keyframes slideIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.chdr{display:flex;align-items:center;gap:12px;padding-bottom:14px;border-bottom:2px solid var(--cr);margin-bottom:18px}
+.cico{width:46px;height:46px;border-radius:12px;background:var(--br);display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.ctit{font-size:1.05rem;font-weight:800;color:var(--br)}
+.csub{font-size:.74rem;color:var(--gy);margin-top:2px;line-height:1.3}
+/* BUTTONS */
+.btn{border:none;border-radius:50px;cursor:pointer;font-weight:700;display:inline-flex;align-items:center;gap:5px;transition:all .2s;min-height:44px;padding:0 18px;font-size:.82rem;font-family:inherit}
+.btn-br{background:var(--br);color:#fff}.btn-br:hover{background:var(--wm)}
+.btn-am{background:var(--am);color:#fff}.btn-am:hover{opacity:.88}
+.btn-cr{background:var(--cr);color:var(--br);border:2px solid var(--am)}.btn-cr:hover{background:var(--am);color:#fff}
+.btn-gn{background:var(--gn);color:#fff}
+.btn-rd{background:var(--rd);color:#fff}
+.btn-rec{background:var(--rd);color:#fff;border:none;border-radius:50px;min-height:44px;padding:0 18px;font-size:.82rem;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:5px;transition:all .2s}
+.btn-rec.on{background:#b02020;animation:rp 1.2s ease-in-out infinite}
+@keyframes rp{0%,100%{box-shadow:0 0 0 0 rgba(231,76,60,.4)}50%{box-shadow:0 0 0 10px rgba(231,76,60,0)}}
+.btn-pb{background:var(--gn);color:#fff;border:none;border-radius:50px;min-height:44px;padding:0 18px;font-size:.82rem;font-weight:700;cursor:pointer;display:none;align-items:center;gap:5px}
+.btn-pb.show{display:inline-flex}
+.aud-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.redo-btn{background:var(--cr);color:var(--br);border:2px solid var(--am);border-radius:50px;padding:6px 16px;font-size:.76rem;font-weight:700;cursor:pointer;min-height:40px;margin-top:12px;display:inline-flex;align-items:center;gap:5px}
+/* INFO BOXES */
+.gram-box{background:linear-gradient(135deg,var(--br),var(--wm));color:#fff;border-radius:14px;padding:16px;margin-bottom:14px}
+.gram-box h3{color:var(--am);margin-bottom:8px;font-size:.9rem}
+.gram-box p{font-size:.84rem;line-height:1.65}
+.gram-rule{background:rgba(255,255,255,.12);border-radius:9px;padding:8px 12px;margin-top:8px;font-size:.8rem;line-height:1.55}
+.story-box{background:var(--cr);border:2px solid var(--am);border-radius:16px;padding:18px;margin-bottom:14px}
+.slbl{font-size:.68rem;font-weight:800;color:var(--am);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}
+.stext{font-size:.93rem;color:#3D2B1F;line-height:2;font-weight:600}
+.stext .sw{transition:background .15s;border-radius:3px;padding:1px 2px}
+.stext .sw.hl{background:rgba(198,139,60,.35);color:var(--br);font-weight:900}
+.sen{font-size:.8rem;color:#777;border-top:1px dashed #d4b896;padding-top:9px;margin-top:9px;line-height:1.65;display:none}
+.sen.show{display:block}
+/* VOCAB */
+.vgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px;margin-bottom:14px}
+@media(min-width:480px){.vgrid{grid-template-columns:repeat(3,1fr)}}
+.vcard{background:var(--cr);border-radius:12px;padding:12px;text-align:center;cursor:pointer;transition:all .2s;border:2px solid transparent;position:relative}
+.vcard:hover,.vcard:active{border-color:var(--am);transform:translateY(-1px)}
+.vico{font-size:1.8rem;margin-bottom:5px}
+.vfr{font-size:.85rem;font-weight:800;color:var(--br)}
+.vart{font-size:.67rem;font-weight:700;padding:2px 7px;border-radius:50px;display:inline-block;margin:2px 0}
+.am{background:#E8F0FF;color:#1B2B5E}.af{background:#FFE4F0;color:#c2185b}.av{background:#E8FFF2;color:#1a8a45}
+.ven{font-size:.68rem;color:var(--gy)}
+/* BLUR */
+.blurred .vfr,.blurred .vart,.blurred .ven{filter:blur(5px);transition:filter .3s;cursor:pointer;user-select:none}
+.blurred:active .vfr,.blurred:active .vart,.blurred:active .ven{filter:none}
+/* VERB TABLE */
+.vtbl{width:100%;border-collapse:collapse;font-size:.85rem;margin:12px 0}
+.vtbl th{background:var(--br);color:#fff;padding:8px 10px;text-align:left;font-size:.8rem}
+.vtbl td{padding:8px 10px;border-bottom:1px solid #f0e4d4}
+.vtbl tr:nth-child(even) td{background:var(--cr)}
+.end{color:var(--am);font-weight:900;text-decoration:underline;font-size:1rem}
+/* FILL */
+.fill-wrap{background:var(--cr);border-radius:12px;padding:13px;margin-bottom:10px;border:2px solid transparent;transition:border-color .3s}
+.fill-wrap.ok{border-color:var(--gn)}.fill-wrap.bad{border-color:var(--rd)}
+.fill-q{font-size:.9rem;color:#3D2B1F;line-height:1.8;margin-bottom:8px;font-weight:600}
+.fill-inp{border:2px solid #d4b896;border-radius:8px;padding:6px 11px;font-size:.9rem;font-family:inherit;outline:none;transition:border-color .2s;min-width:80px;max-width:180px;min-height:40px}
+.fill-inp:focus{border-color:var(--am)}
+.fill-inp.ok{border-color:var(--gn);background:#efffef}
+.fill-inp.bad{border-color:var(--rd);background:#fff0f0}
+.fill-btn{min-height:40px;padding:0 14px;font-size:.78rem;font-weight:700;border:none;border-radius:50px;cursor:pointer;background:var(--br);color:#fff;margin-top:7px}
+.fill-fb{font-size:.78rem;margin-top:6px;font-weight:700;display:none;line-height:1.5}
+/* OWN SENTENCE */
+.os-wrap{background:var(--cr);border-radius:12px;padding:14px;margin-bottom:10px;border:2px dashed var(--am)}
+.os-prompt{font-size:.9rem;color:var(--br);font-weight:700;margin-bottom:8px;line-height:1.6}
+.os-inp{width:100%;border:2px solid #d4b896;border-radius:10px;padding:10px 12px;font-size:.9rem;font-family:inherit;outline:none;min-height:44px;transition:border-color .2s}
+.os-inp:focus{border-color:var(--am)}
+.os-fb{font-size:.8rem;margin-top:7px;padding:9px 12px;border-radius:10px;display:none;line-height:1.5;font-weight:600}
+.os-fb.show{display:block}
+/* GROUPING */
+.grp-word{display:inline-block;background:var(--br);color:#fff;border-radius:50px;padding:6px 14px;font-size:.82rem;font-weight:700;margin:4px;cursor:pointer;transition:all .2s;min-height:38px}
+.grp-word:hover{background:var(--am)}
+.grp-col{background:var(--cr);border:2px dashed var(--am);border-radius:14px;padding:12px;min-height:80px;margin-top:8px}
+.grp-col h4{font-size:.75rem;font-weight:800;margin-bottom:8px;text-align:center;padding-bottom:5px;border-bottom:2px solid var(--am)}
+.grp-col h4.mc{color:#1B2B5E}.grp-col h4.fc{color:#c2185b}
+.grp-inp{border:2px solid #d4b896;border-radius:8px;padding:7px 11px;font-size:.88rem;font-family:inherit;outline:none;margin:3px;min-height:42px;min-width:120px;transition:border-color .2s}
+.grp-inp:focus{border-color:var(--am)}
+.grp-inp.ok{border-color:var(--gn);background:#efffef}
+.grp-inp.bad{border-color:var(--rd);background:#fff0f0}
+/* TROUS */
+.trous-sent{background:var(--cr);border-radius:12px;padding:12px 14px;margin-bottom:10px;border:2px solid transparent;transition:border-color .3s;font-size:.9rem;color:#3D2B1F;font-weight:600;line-height:2}
+.trous-sent.ok{border-color:var(--gn)}.trous-sent.bad{border-color:var(--rd)}
+.trous-inp{border:2px solid var(--am);border-radius:8px;padding:4px 9px;font-size:.88rem;font-family:inherit;outline:none;display:inline-block;min-width:90px;min-height:38px;vertical-align:middle;transition:border-color .2s}
+.trous-inp:focus{border-color:var(--br)}
+.trous-inp.ok{border-color:var(--gn);background:#efffef}
+.trous-inp.bad{border-color:var(--rd);background:#fff0f0}
+.trous-fb{font-size:.76rem;margin-top:5px;font-weight:700;display:none}
+/* UNDERSTAND BAR */
+.ubar{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.ubtn{border:2px solid var(--am);border-radius:50px;padding:8px 14px;font-size:.8rem;font-weight:700;cursor:pointer;background:#fff;color:var(--br);min-height:42px;transition:all .2s;flex:1;text-align:center}
+.ubtn.sel{background:var(--am);color:#fff}
+/* DIALOGUE SIM */
+.sim-q{background:linear-gradient(135deg,var(--br),var(--wm));color:#fff;border-radius:14px;padding:16px;margin-bottom:12px}
+.sim-q-text{font-size:1rem;font-weight:800;color:#fff;margin-bottom:4px}
+.sim-q-en{font-size:.78rem;color:rgba(255,255,255,.65)}
+.sim-timer{font-size:2rem;font-weight:900;color:var(--am);text-align:center;margin:8px 0;font-variant-numeric:tabular-nums}
+.sim-timer.urgent{color:var(--rd);animation:rp 1s infinite}
+.sim-progress{display:flex;gap:5px;justify-content:center;margin:8px 0}
+.sim-dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.25)}
+.sim-dot.done{background:var(--am)}
+.sim-dot.current{background:#fff}
+.answer-reveal{background:rgba(255,255,255,.12);border-radius:10px;padding:10px 13px;margin-top:8px;display:none}
+.answer-reveal.show{display:block}
+/* WRITING */
+.chunk-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+@media(max-width:400px){.chunk-grid{grid-template-columns:1fr}}
+.chunk{background:var(--cr);border-radius:10px;padding:9px 12px;font-size:.8rem;cursor:pointer;border:2px solid transparent;transition:all .2s}
+.chunk:hover{border-color:var(--am)}
+.chunk .cfr{font-weight:800;color:var(--br)}
+.chunk .cen{color:var(--gy);font-size:.72rem}
+.warea{width:100%;border:2px solid #d4b896;border-radius:12px;padding:12px;font-size:.9rem;font-family:inherit;min-height:140px;outline:none;resize:vertical;transition:border-color .2s;line-height:1.7}
+.warea:focus{border-color:var(--am)}
+.wcount{font-size:.72rem;color:var(--gy);text-align:right;margin-top:3px}
+/* QUIZ */
+.qwrap{background:#fff;border:2px solid #e8d5c0;border-radius:14px;padding:14px;margin-bottom:12px}
+.qtxt{font-size:.9rem;font-weight:700;color:#3D2B1F;margin-bottom:10px;line-height:1.4}
+.qopts{display:flex;flex-direction:column;gap:7px}
+.qopt{border:2px solid #e8d5c0;border-radius:10px;padding:11px 14px;cursor:pointer;font-size:.86rem;transition:all .2s;min-height:44px}
+.qopt:hover{border-color:var(--br);background:var(--cr)}
+.qopt.co{border-color:var(--gn)!important;background:#efffef;color:#1a8a45;font-weight:700}
+.qopt.wo{border-color:var(--rd)!important;background:#fff0f0;color:#b03030}
+.qopt.sel{border-color:var(--br);background:var(--cr)}
+.qopt.dis{pointer-events:none}
+.qex{margin-top:7px;font-size:.77rem;color:#555;background:var(--cr);border-radius:8px;padding:7px 10px;display:none;line-height:1.5}
+.qex.show{display:block}
+/* SCORE */
+.sc-card{text-align:center;padding:22px 14px;border-radius:16px;border:3px solid}
+/* NAV */
+.nav-bar{display:flex;justify-content:space-between;margin-top:20px;gap:8px}
+.btn-nxt{background:var(--br);color:#fff;border:none;border-radius:50px;padding:0 24px;min-height:46px;font-size:.88rem;font-weight:800;cursor:pointer;transition:all .2s}
+.btn-nxt:hover{background:var(--wm)}
+.btn-prv{background:#fff;color:var(--br);border:2px solid var(--br);border-radius:50px;padding:0 20px;min-height:46px;font-size:.85rem;font-weight:700;cursor:pointer;transition:all .2s}
+.btn-prv:hover{background:var(--br);color:#fff}
+.cta{background:linear-gradient(135deg,var(--br),var(--wm));color:#fff;border-radius:14px;padding:15px 18px;text-align:center;margin:16px 0}
+.cta h4{color:var(--am);margin-bottom:4px;font-size:.9rem}
+.cta p{font-size:.78rem;opacity:.82;margin-bottom:10px}
+.cta a{background:var(--am);color:var(--br);border-radius:50px;padding:8px 20px;font-weight:800;text-decoration:none;font-size:.82rem;display:inline-block}
+/* PROGRESS BAR IN ACTIVITY */
+.act-prog{display:flex;gap:5px;margin-bottom:14px;flex-wrap:wrap}
+.act-step{height:5px;flex:1;background:#e8d5c0;border-radius:5px;min-width:20px}
+.act-step.done{background:var(--am)}
+.act-step.active{background:var(--br)}
+/* COACH */
+.coach-wrap{position:fixed;bottom:16px;right:14px;z-index:300;display:flex;flex-direction:column;align-items:flex-end}
+.coach-av{width:52px;height:52px;border-radius:50%;background:var(--br);border:3px solid var(--am);display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;animation:fl 3s ease-in-out infinite;box-shadow:0 4px 16px rgba(92,61,46,.4)}
+@keyframes fl{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+.coach-msg{background:#fff;border-radius:14px;border:2px solid var(--am);padding:10px 12px;max-width:200px;margin-bottom:8px;box-shadow:0 3px 16px rgba(92,61,46,.15);font-size:.78rem;color:#3D2B1F;line-height:1.5;display:none}
+.coach-msg.show{display:block;animation:fu .35s ease}
+@keyframes fu{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+/* SCREENSHOT BOX */
+.ss-box{background:#FFF9EC;border:2px solid var(--am);border-radius:14px;padding:14px;text-align:center;margin-top:14px}
+.ss-box h4{color:var(--br);font-size:.88rem;margin-bottom:6px}
+.ss-box p{font-size:.76rem;color:var(--gy);line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="logo">FAST <em>FRENCH</em> LAB</div>
+  <div class="prog-wrap"><div class="prog-lbl">DAY 5</div><div class="prog-track"><div class="prog-bar" id="progBar"></div></div></div>
+  <div class="pill">🏠 DAY 5</div>
+</div>
+
+<div class="wrap">
+  <div class="dots" id="dotsWrap"></div>
+
+  <!-- ===== ACT 1: LISTENING FIRST ===== -->
+  <div class="card show" id="act1">
+    <div class="chdr"><div class="cico">🎧</div><div><div class="ctit">Listening First — Sophie's Story</div><div class="csub">Activity 1 of 7 · Listen before you read. Train your ear first — this is how real French is acquired.</div></div></div>
+
+    <div class="gram-box">
+      <h3>🎯 Today's Objective</h3>
+      <p>By the end of Day 5 you will be able to <strong>speak and write about where you live, the type of building, your rooms, and who you live with</strong> — using -ER verbs correctly.</p>
+      <div class="gram-rule">Key verbs: <strong>habiter</strong> · <strong>aimer</strong> · <strong>travailler</strong> · <strong>partager</strong> · <strong>regarder</strong></div>
+    </div>
+
+    <!-- STEP 1: AUDIO ONLY -->
+    <div class="story-box" id="step1box">
+      <div class="slbl">🎧 Step 1 — Press Play. Just listen. No reading yet.</div>
+      <div style="background:rgba(198,139,60,.1);border-radius:10px;padding:11px;text-align:center;font-size:.84rem;color:var(--br);font-weight:700;margin-bottom:12px">
+        Close your eyes if you want. Don't worry about understanding everything — just let the sounds of French wash over you.
+      </div>
+      <!-- AUDIO PLAYER -->
+      <div style="background:var(--br);border-radius:14px;padding:14px;color:#fff">
+        <div style="font-size:.72rem;color:rgba(255,255,255,.55);margin-bottom:8px;text-align:center">Sophie — Montmartre, Paris</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <button id="playBtn" onclick="togglePlay()" style="background:var(--am);color:var(--br);border:none;border-radius:50%;width:46px;height:46px;font-size:1.1rem;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center">▶</button>
+          <div style="flex:1">
+            <div style="height:6px;background:rgba(255,255,255,.2);border-radius:10px;cursor:pointer;position:relative" id="scrubBar" onclick="scrub(event)">
+              <div style="height:6px;background:var(--am);border-radius:10px;transition:width .3s;width:0%" id="scrubFill"></div>
+            </div>
+            <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:.65rem;color:rgba(255,255,255,.5)"><span id="curTime">0:00</span><span id="durTime">0:35</span></div>
+          </div>
+          <button onclick="toggleSpeed()" id="speedBtn" style="background:rgba(255,255,255,.15);color:#fff;border:none;border-radius:50px;padding:5px 11px;font-size:.72rem;font-weight:700;cursor:pointer;min-height:34px">0.8x</button>
+        </div>
+      </div>
+      <div class="aud-row" style="justify-content:center;margin-top:12px">
+        <button class="btn btn-br" onclick="spkStory(0.82)">🔊 Normal Speed</button>
+        <button class="btn btn-cr" onclick="spkStory(0.52)">🐢 Slow Speed</button>
+      </div>
+      <button class="btn btn-am" style="width:100%;justify-content:center;margin-top:12px" onclick="showStep2()">👁️ I've Listened — Show the Text →</button>
+    </div>
+
+    <!-- STEP 2: TEXT + SYNC -->
+    <div id="step2box" style="display:none">
+      <div class="story-box">
+        <div class="slbl">👁️ Step 2 — Listen again. Follow the text. Words highlight as you listen.</div>
+        <div class="stext" id="storyTxt"></div>
+        <div class="sen" id="storyEn">Hello! My name is Sophie. I live in an apartment on the third floor of a large building. My apartment is in the Montmartre neighbourhood, on Rue des Fleurs. It is a calm, beautiful neighbourhood with cafés and boutiques. In my apartment there is a living room, a modern kitchen, two bedrooms and a bathroom. I love my apartment because it is bright and quiet. I work close to home. I live with my husband and our daughter. We love this neighbourhood. It is our home!</div>
+        <div class="aud-row" style="flex-wrap:wrap;gap:8px;margin-top:12px">
+          <button class="btn btn-br" onclick="syncListen(0.82,this)">🔊 Listen + Follow</button>
+          <button class="btn btn-cr" onclick="syncListen(0.52,this)">🐢 Slow + Follow</button>
+          <button class="btn btn-am" onclick="toggleEn()">👁️ Show/Hide English</button>
+        </div>
+        <!-- MIRROR SPEAKING 1 -->
+        <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:12px">
+          <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 1 — Shadow the story:</div>
+          <div class="aud-row">
+            <button class="btn btn-br" onclick="spkStory(0.82)">🔊 Hear</button>
+            <button class="btn-rec" id="mirRec1" onclick="dRec('mirRec1','mirPb1')">🎤 Record</button>
+            <button class="btn-pb" id="mirPb1" onclick="pBlob('mirPb1')">▶️ Hear Me</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 3: FILL THE VERBS -->
+      <div class="story-box">
+        <div class="slbl">✏️ Step 3 — Fill in the Missing Verbs. Look at the story above to help you.</div>
+        <div style="font-size:.78rem;color:var(--br);font-weight:700;margin-bottom:12px">The verbs have been removed. Type them back in. Check the story above if you need to!</div>
+        <div id="verbFills"></div>
+        <div class="aud-row" style="margin-top:4px">
+          <button class="btn btn-gn" onclick="checkVerbFills()">✅ Check My Verbs</button>
+          <button class="redo-btn" onclick="resetVerbFills()">🔄 Redo</button>
+        </div>
+        <div id="verbFillFb" style="display:none;margin-top:10px;padding:10px 13px;border-radius:10px;font-size:.8rem;font-weight:700"></div>
+      </div>
+
+      <!-- UNDERSTAND BAR -->
+      <div class="story-box">
+        <div class="slbl">💭 How much of Sophie's story did you understand?</div>
+        <div class="ubar" id="ubar"></div>
+        <div id="ubar-fb" style="display:none;margin-top:8px;font-size:.82rem;font-weight:700;padding:10px 13px;border-radius:10px"></div>
+      </div>
+    </div>
+
+    <div class="nav-bar"><div></div><button class="btn-nxt" onclick="goAct(2)">Vocabulary →</button></div>
+  </div>
+
+  <!-- ===== ACT 2: VOCABULARY ===== -->
+  <div class="card" id="act2">
+    <div class="chdr"><div class="cico">🏠</div><div><div class="ctit">Home & Neighbourhood Vocabulary</div><div class="csub">Activity 2 of 7 · Tap to hear · Click to unblur · Then quiz yourself</div></div></div>
+
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin-bottom:10px">🏢 Types of Buildings — Tap card to hear:</div>
+    <div class="vgrid" id="bldGrid"></div>
+
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin:14px 0 10px">🚪 Rooms in the House:</div>
+    <div class="vgrid" id="roomGrid"></div>
+
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin:14px 0 10px">🗺️ Neighbourhood Words:</div>
+    <div class="vgrid" id="streetGrid"></div>
+
+    <!-- VOCAB QUIZ (blur) -->
+    <div style="background:var(--cr);border-radius:14px;padding:14px;margin:14px 0">
+      <div style="font-size:.78rem;font-weight:800;color:var(--br);margin-bottom:8px">🧩 Vocab Quiz — Tap a card to UNBLUR and reveal the French:</div>
+      <div class="vgrid" id="blurGrid"></div>
+      <button class="redo-btn" onclick="resetBlur()">🔄 Blur Again & Repeat</button>
+    </div>
+
+    <!-- MIRROR SPEAKING 2 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-bottom:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 2 — Say all the room words:</div>
+      <div class="aud-row">
+        <button class="btn btn-br" onclick="spkText('le salon, la cuisine, la chambre, la salle de bain, le couloir, le balcon, le jardin',this)">🔊 Hear All Rooms</button>
+        <button class="btn-rec" id="mirRec2" onclick="dRec('mirRec2','mirPb2')">🎤 Record</button>
+        <button class="btn-pb" id="mirPb2" onclick="pBlob('mirPb2')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <!-- OWN HOUSING FILL-IN -->
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin-bottom:10px">🏡 Write About YOUR Home — Fill in YOUR details (5–6 sentences):</div>
+    <div class="gram-box" style="margin-bottom:12px">
+      <h3>💡 Remember!</h3>
+      <p>Use <strong>avoir</strong> from Day 2: J'ai un salon, j'ai deux chambres...<br>Use <strong>habiter</strong> from today: J'habite dans... / J'habite à...<br>There are no wrong answers here — just write YOUR real situation!</p>
+    </div>
+    <div id="ownFills"></div>
+    <div class="aud-row" style="margin-top:8px">
+      <button class="btn btn-gn" onclick="checkOwn()">✅ Check & Translate</button>
+      <button class="redo-btn" onclick="resetOwn()">🔄 Try Again</button>
+    </div>
+    <div id="ownFb" style="display:none;margin-top:10px"></div>
+
+    <!-- MIRROR SPEAKING 3 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 3 — Read your sentences aloud:</div>
+      <div class="aud-row">
+        <button class="btn-rec" id="mirRec3" onclick="dRec('mirRec3','mirPb3')">🎤 Record My Housing</button>
+        <button class="btn-pb" id="mirPb3" onclick="pBlob('mirPb3')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button class="btn-prv" onclick="goAct(1)">← Back</button><button class="btn-nxt" onclick="goAct(3)">Verbs →</button></div>
+  </div>
+
+  <!-- ===== ACT 3: ER VERBS ===== -->
+  <div class="card" id="act3">
+    <div class="chdr"><div class="cico">📚</div><div><div class="ctit">-ER Verbs: Habiter, Aimer, Partager</div><div class="csub">Activity 3 of 7 · The most important verb pattern in French. Learn it once, use it forever.</div></div></div>
+
+    <div class="gram-box">
+      <h3>The -ER Pattern Rule</h3>
+      <p>Take any -ER verb. Remove -ER. Add the right ending for each pronoun. That is it. Thousands of French verbs work this way.</p>
+      <div class="gram-rule">Endings: <strong>-e · -es · -e · -ons · -ez · -ent</strong><br>💡 je/il/elle and ils/elles endings are SILENT. Only the spelling is different.</div>
+    </div>
+
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin-bottom:8px">📋 HABITER — conjugated (endings highlighted):</div>
+    <table class="vtbl" id="habiterTable"></table>
+
+    <!-- MIRROR SPEAKING 4 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin:12px 0">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 4 — Say each form with me:</div>
+      <div class="aud-row">
+        <button class="btn btn-br" onclick="spkText('j habite, tu habites, il habite, nous habitons, vous habitez, ils habitent',this)">🔊 Hear All Forms</button>
+        <button class="btn-rec" id="mirRec4" onclick="dRec('mirRec4','mirPb4')">🎤 Record</button>
+        <button class="btn-pb" id="mirPb4" onclick="pBlob('mirPb4')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <!-- AIMER PATTERN -->
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin:14px 0 8px">🔄 Now practise AIMER (to like/love) — same pattern:</div>
+    <div id="aimerFills"></div>
+    <div class="aud-row"><button class="btn btn-gn" onclick="checkVerb('aimer')">✅ Check</button><button class="redo-btn" onclick="resetVerb('aimer')">🔄 Redo</button></div>
+    <div id="aimerFb" style="display:none;margin-top:8px;padding:9px 13px;border-radius:10px;font-size:.8rem;font-weight:700"></div>
+
+    <!-- MIRROR 5 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin:12px 0">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 5 — Aimer forms:</div>
+      <div class="aud-row">
+        <button class="btn btn-br" onclick="spkText('j aime, tu aimes, il aime, nous aimons, vous aimez, ils aiment',this)">🔊 Hear</button>
+        <button class="btn-rec" id="mirRec5" onclick="dRec('mirRec5','mirPb5')">🎤 Record</button>
+        <button class="btn-pb" id="mirPb5" onclick="pBlob('mirPb5')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <!-- PARTAGER + REGARDER conjugation -->
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin:14px 0 8px">✏️ Now YOU conjugate PARTAGER (to share) and REGARDER (to watch):</div>
+    <div class="gram-box" style="margin-bottom:10px">
+      <h3>Reminder</h3>
+      <p>Remove -ER → add <strong>-e · -es · -e · -ons · -ez · -ent</strong><br>⚠️ PARTAGER: nous form adds an E: nous <em>partageons</em> (keeps the soft G sound)</p>
+    </div>
+    <div id="partagerFills"></div>
+    <div class="aud-row"><button class="btn btn-gn" onclick="checkVerb('partager')">✅ Check Partager</button><button class="redo-btn" onclick="resetVerb('partager')">🔄 Redo</button></div>
+    <div id="partagerFb" style="display:none;margin-top:8px;padding:9px 13px;border-radius:10px;font-size:.8rem;font-weight:700"></div>
+
+    <div style="margin-top:14px" id="regarderFills"></div>
+    <div class="aud-row"><button class="btn btn-gn" onclick="checkVerb('regarder')">✅ Check Regarder</button><button class="redo-btn" onclick="resetVerb('regarder')">🔄 Redo</button></div>
+    <div id="regarderFb" style="display:none;margin-top:8px;padding:9px 13px;border-radius:10px;font-size:.8rem;font-weight:700"></div>
+
+    <!-- MIRROR 6 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 6 — Line by line. Hear each sentence then repeat:</div>
+      <div id="lineMirror"></div>
+    </div>
+
+    <div class="nav-bar"><button class="btn-prv" onclick="goAct(2)">← Back</button><button class="btn-nxt" onclick="goAct(4)">Gender →</button></div>
+  </div>
+
+  <!-- ===== ACT 4: GENDER GROUPING ===== -->
+  <div class="card" id="act4">
+    <div class="chdr"><div class="cico">⚡</div><div><div class="ctit">Masculine & Feminine Grouping</div><div class="csub">Activity 4 of 7 · Continuation from Day 2. Sort the words into the correct column by typing.</div></div></div>
+
+    <div class="gram-box" style="margin-bottom:14px">
+      <h3>Quick Recap from Day 2</h3>
+      <p><strong style="color:var(--am)">LE / UN</strong> = masculine · <strong style="color:#ffaacc">LA / UNE</strong> = feminine · <strong style="color:#7dffb3">L'</strong> = before vowel sounds</p>
+      <div class="gram-rule">New patterns today:<br>
+      💙 Often MASCULIN: <strong>-age</strong> (garage), <strong>-ment</strong> (appartement), <strong>-isme</strong> (tourisme), <strong>-eur</strong> (couleur), <strong>-eau</strong> (bureau), <strong>-tre</strong> (théâtre)<br>
+      💗 Often FÉMININ: <strong>-tion</strong> (station), <strong>-té</strong> (liberté), <strong>-ure</strong> (voiture), <strong>-ette</strong> (baguette), <strong>-ée</strong> (journée)</div>
+    </div>
+
+    <div style="font-size:.8rem;font-weight:800;color:var(--br);margin-bottom:8px">📦 Words to sort — they appear one at a time. Click to hear each one:</div>
+    <div id="grpWords" style="margin-bottom:14px;min-height:50px;background:var(--cr);border-radius:12px;padding:10px"></div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px">
+      <div class="grp-col">
+        <h4 class="mc">💙 MASCULIN<br><small>le / un</small></h4>
+        <div id="mascCol"></div>
+      </div>
+      <div class="grp-col">
+        <h4 class="fc">💗 FÉMININ<br><small>la / une</small></h4>
+        <div id="femCol"></div>
+      </div>
+    </div>
+
+    <div class="aud-row">
+      <button class="btn btn-gn" onclick="checkGrouping()">✅ Check Grouping</button>
+      <button class="redo-btn" onclick="resetGrouping()">🔄 Redo</button>
+    </div>
+    <div id="grpFb" style="display:none;margin-top:10px;padding:12px;border-radius:12px;font-size:.82rem;font-weight:600;line-height:1.6"></div>
+
+    <!-- MIRROR 7 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 7 — Say masculine words with LE/UN, feminine with LA/UNE:</div>
+      <div class="aud-row">
+        <button class="btn btn-br" onclick="spkText('le salon, le quartier, le balcon, la cuisine, la voiture, la ville, l appartement, l adresse',this)">🔊 Hear With Articles</button>
+        <button class="btn-rec" id="mirRec7" onclick="dRec('mirRec7','mirPb7')">🎤 Record</button>
+        <button class="btn-pb" id="mirPb7" onclick="pBlob('mirPb7')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button class="btn-prv" onclick="goAct(3)">← Back</button><button class="btn-nxt" onclick="goAct(5)">Texte à Trous →</button></div>
+  </div>
+
+  <!-- ===== ACT 5: TEXTE À TROUS ===== -->
+  <div class="card" id="act5">
+    <div class="chdr"><div class="cico">✏️</div><div><div class="ctit">Texte à Trous — Fill While You Listen</div><div class="csub">Activity 5 of 7 · Listen to Marc's story and fill in the missing words as you hear them</div></div></div>
+
+    <div class="gram-box" style="margin-bottom:14px">
+      <h3>How It Works</h3>
+      <p>Press Listen. As you hear Marc's story, fill in the missing words in the gaps. Each sentence has 2 missing words. The words come from today's vocabulary — look at Activity 2 if you need a reminder. You can listen as many times as you need!</p>
+      <div class="gram-rule">💡 French learners need at least 3 listens to understand a new text. That is completely normal. Press listen again and again.</div>
+    </div>
+
+    <div class="aud-row" style="margin-bottom:14px">
+      <button class="btn btn-br" onclick="spkText(MARC_STORY,this)">🔊 Listen to Marc (Normal)</button>
+      <button class="btn btn-cr" onclick="spkTextSlow(MARC_STORY,this)">🐢 Slow Speed</button>
+    </div>
+
+    <div id="trousEx"></div>
+
+    <div class="aud-row" style="margin-top:8px">
+      <button class="btn btn-gn" onclick="checkTrous()">✅ Check My Answers</button>
+      <button class="redo-btn" onclick="resetTrous()">🔄 Redo</button>
+    </div>
+    <div id="trousFb" style="display:none;margin-top:10px;padding:12px;border-radius:12px;font-size:.84rem;font-weight:700"></div>
+
+    <!-- UNDERSTAND BAR FOR MARC -->
+    <div style="background:var(--cr);border-radius:14px;padding:14px;margin-top:14px">
+      <div style="font-size:.78rem;font-weight:800;color:var(--br);margin-bottom:8px">💭 How much of Marc's story did you understand?</div>
+      <div class="ubar" id="ubar2"></div>
+      <div id="ubar2fb" style="display:none;margin-top:8px;padding:10px 12px;border-radius:10px;font-size:.8rem;font-weight:700"></div>
+    </div>
+
+    <!-- MIRROR 8 + 9 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 8 — Read Marc's story aloud after listening:</div>
+      <div class="aud-row">
+        <button class="btn btn-br" onclick="spkText(MARC_STORY,this)">🔊 Hear</button>
+        <button class="btn-rec" id="mirRec8" onclick="dRec('mirRec8','mirPb8')">🎤 Record</button>
+        <button class="btn-pb" id="mirPb8" onclick="pBlob('mirPb8')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button class="btn-prv" onclick="goAct(4)">← Back</button><button class="btn-nxt" onclick="goAct(6)">Dialogue →</button></div>
+  </div>
+
+  <!-- ===== ACT 6: DIALOGUE SIMULATION ===== -->
+  <div class="card" id="act6">
+    <div class="chdr"><div class="cico">💬</div><div><div class="ctit">Dialogue Simulation</div><div class="csub">Activity 6 of 7 · Practice first · Then simulate at slow pace · Then simulate at real pace</div></div></div>
+
+    <!-- PRACTICE SECTION -->
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin-bottom:10px">📖 First: Read and listen to all Q&A pairs. Practise BOTH sides.</div>
+    <div id="dialPractice"></div>
+
+    <!-- MIRROR 10 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin:14px 0">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 10 — Practise the answers one by one:</div>
+      <div id="dialMirrors"></div>
+    </div>
+
+    <!-- SLOW SIMULATION -->
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin:16px 0 10px">🐢 Slow Simulation — I ask the question. You have 15 seconds to answer aloud.</div>
+    <div style="background:var(--cr);border-radius:14px;padding:14px;margin-bottom:12px;font-size:.8rem;color:var(--br)">
+      📋 <strong>How to do this:</strong> Listen to the question. Look at the answer below. Read it aloud before the timer runs out. Press Next when ready. This trains your response reflex!
+    </div>
+    <div id="simSlow" style="display:none"></div>
+    <button class="btn btn-br" onclick="startSim('slow')" id="startSlowBtn" style="width:100%;justify-content:center;min-height:48px">▶️ Start Slow Simulation (15 sec)</button>
+
+    <!-- FAST SIMULATION -->
+    <div style="font-size:.82rem;font-weight:800;color:var(--br);margin:16px 0 10px">⚡ Fast Simulation — 10 seconds per question. No answer shown.</div>
+    <div id="simFast" style="display:none"></div>
+    <button class="btn btn-am" onclick="startSim('fast')" id="startFastBtn" style="width:100%;justify-content:center;min-height:48px;margin-top:0">⚡ Start Fast Simulation (10 sec)</button>
+
+    <!-- MIRROR 11 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 11 — Record YOUR answers to all questions:</div>
+      <div class="aud-row">
+        <button class="btn-rec" id="mirRec11" onclick="dRec('mirRec11','mirPb11')">🎤 Record Full Dialogue</button>
+        <button class="btn-pb" id="mirPb11" onclick="pBlob('mirPb11')">▶️ Hear Me</button>
+      </div>
+    </div>
+
+    <div class="nav-bar"><button class="btn-prv" onclick="goAct(5)">← Back</button><button class="btn-nxt" onclick="goAct(7)">Writing →</button></div>
+  </div>
+
+  <!-- ===== ACT 7: TIMED WRITING ===== -->
+  <div class="card" id="act7">
+    <div class="chdr"><div class="cico">✍️</div><div><div class="ctit">Writing Challenge</div><div class="csub">Activity 7 of 7 · Write about YOUR home. Use the outline, chunks and new vocab below.</div></div></div>
+
+    <div class="gram-box" style="margin-bottom:14px">
+      <h3>Your Writing Outline — Include ALL of these:</h3>
+      <p>1. The type of building you live in (immeuble / maison / studio...)<br>
+      2. The street or neighbourhood<br>
+      3. The rooms in your home (use IL Y A...)<br>
+      4. Who you live with<br>
+      5. Whether you like your area and WHY<br>
+      6. One thing you do at home (a verb: regarder, écouter, travailler...)</p>
+    </div>
+
+    <div style="font-size:.78rem;font-weight:800;color:var(--br);margin-bottom:8px">📐 Sentence Chunks — Tap to copy to your writing:</div>
+    <div class="chunk-grid" id="chunkGrid"></div>
+
+    <div style="font-size:.78rem;font-weight:800;color:var(--br);margin:14px 0 8px">📚 New Vocabulary for Today — Tap to hear:</div>
+    <div id="newVocab" style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px"></div>
+
+    <!-- TIMER -->
+    <div style="text-align:center;margin-bottom:8px;font-size:.8rem;color:var(--br);font-weight:700">⏱️ 4-minute writing timer:</div>
+    <div id="timerDisp" style="font-size:2.6rem;font-weight:900;color:var(--br);text-align:center;margin-bottom:6px;font-variant-numeric:tabular-nums">4:00</div>
+    <div style="height:8px;background:#e8d5c0;border-radius:10px;margin-bottom:12px"><div id="timerBar" style="height:8px;background:var(--am);border-radius:10px;transition:width 1s linear;width:100%"></div></div>
+    <div style="display:flex;gap:8px;justify-content:center;margin-bottom:14px;flex-wrap:wrap">
+      <button class="btn btn-br" id="timerStart" onclick="startTimer()">▶️ Start Timer</button>
+      <button class="btn btn-cr" id="timerReset" onclick="resetTimer()" style="display:none">🔄 Reset</button>
+    </div>
+
+    <textarea class="warea" id="wArea" placeholder="Commencez à écrire ici..." oninput="updateWC()"></textarea>
+    <div class="wcount" id="wCount">0 words</div>
+
+    <!-- GRAMMAR CHECK -->
+    <div class="aud-row" style="margin-top:10px;justify-content:center">
+      <button class="btn btn-gn" onclick="checkWriting()">✅ Check Grammar & Spelling</button>
+    </div>
+    <div id="writeFb" style="display:none;margin-top:10px;padding:13px;border-radius:12px;font-size:.82rem;line-height:1.6;font-weight:600"></div>
+
+    <!-- MIRROR 12 + 13 -->
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:14px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 12 — Hear a model paragraph then record yours:</div>
+      <div class="aud-row">
+        <button class="btn btn-br" onclick="spkText('J habite dans un appartement au deuxième étage d un grand immeuble. Mon appartement se trouve dans le quartier nord, dans la rue de la Paix. Il y a un salon, deux chambres et une cuisine moderne. J habite avec ma famille. J aime mon quartier parce qu il est calme et il y a de bons restaurants. Le soir, je regarde la télévision dans le salon.',this)">🔊 Hear Model</button>
+        <button class="btn-rec" id="mirRec12" onclick="dRec('mirRec12','mirPb12')">🎤 Record Mine</button>
+        <button class="btn-pb" id="mirPb12" onclick="pBlob('mirPb12')">▶️ Hear Me</button>
+      </div>
+    </div>
+    <div style="background:rgba(198,139,60,.1);border-radius:12px;padding:12px;margin-top:10px">
+      <div style="font-size:.75rem;font-weight:800;color:var(--br);margin-bottom:7px">🎤 Mirror Practice 13 — Line by line, slow and clear:</div>
+      <div id="writeMirrors"></div>
+    </div>
+
+    <!-- SCREENSHOT BOX -->
+    <div class="ss-box">
+      <h4>📸 Take a Screenshot NOW</h4>
+      <p>Screenshot your writing before leaving this page. You will need it for the community.<br><br>
+      👇 Then press the button below to <strong>copy your text</strong> and go to the community to post your paragraph as a voice or video note. Your coach will respond!</p>
+      <button class="btn btn-am" style="margin-top:10px;min-height:46px" onclick="copyWriting()">📋 Copy My Writing</button>
+      <div id="copyFb" style="display:none;margin-top:8px;font-size:.78rem;color:var(--gn);font-weight:700">✅ Copied! Now go to the community and paste it as your voice/video note.</div>
+    </div>
+
+    <!-- FINAL QUIZ -->
+    <div style="font-size:.88rem;font-weight:800;color:var(--br);margin:20px 0 12px;padding-top:16px;border-top:2px solid var(--cr)">📝 Day 5 Quiz — Score 5/6 to complete:</div>
+    <div id="quizContent"></div>
+    <div id="scoreCard" style="display:none"></div>
+    <div class="aud-row" style="margin-top:14px;justify-content:space-between">
+      <button class="btn-prv" onclick="goAct(6)">← Back</button>
+      <button class="btn-nxt" id="btnSub" onclick="submitQuiz()">✅ Submit Quiz</button>
+    </div>
+  </div>
+</div>
+
+<div class="coach-wrap">
+  <div class="coach-msg" id="coachMsg"></div>
+  <div class="coach-av" onclick="toggleCoach()">👩🏾‍🏫</div>
+</div>
+
+<script>
+// ============================================================
+// DATA
+// ============================================================
+const SOPHIE_WORDS=["Bonjour!","Je","m'appelle","Sophie.","J'habite","dans","un","appartement","au","troisième","étage","d'un","grand","immeuble.","Mon","appartement","se","trouve","dans","le","quartier","de","Montmartre,","dans","la","rue","des","Fleurs.","C'est","un","beau","quartier","calme","avec","des","cafés","et","des","boutiques.","Dans","mon","appartement,","il","y","a","un","salon,","une","cuisine","moderne,","deux","chambres","et","une","salle","de","bain.","J'aime","mon","appartement","parce","qu'il","est","lumineux","et","calme.","Je","travaille","près","de","chez","moi.","J'habite","avec","mon","mari","et","notre","fille.","Nous","aimons","ce","quartier.","C'est","notre","chez-nous!"];
+const SOPHIE_FR="Bonjour! Je m'appelle Sophie. J'habite dans un appartement au troisième étage d'un grand immeuble. Mon appartement se trouve dans le quartier de Montmartre, dans la rue des Fleurs. C'est un beau quartier calme avec des cafés et des boutiques. Dans mon appartement, il y a un salon, une cuisine moderne, deux chambres et une salle de bain. J'aime mon appartement parce qu'il est lumineux et calme. Je travaille près de chez moi. J'habite avec mon mari et notre fille. Nous aimons ce quartier. C'est notre chez-nous!";
+const MARC_STORY="Marc habite dans une maison à Lyon. Il aime son quartier parce qu'il est tranquille. Sa maison a un grand salon, une cuisine et trois chambres. Il partage la maison avec sa femme et ses deux enfants. Il travaille dans le centre-ville. Le soir, il regarde la télévision dans le salon. Il habite dans la rue Victor Hugo depuis cinq ans.";
+
+const VERB_FILLS=[
+  {before:"Je m'appelle Sophie. J'",blank:"habite",after:" dans un appartement au troisième étage."},
+  {before:"Mon appartement se ",blank:"trouve",after:" dans le quartier de Montmartre."},
+  {before:"J'",blank:"aime",after:" mon appartement parce qu'il est lumineux."},
+  {before:"Je ",blank:"travaille",after:" près de chez moi."},
+  {before:"Nous ",blank:"aimons",after:" ce quartier. C'est notre chez-nous!"}
+];
+const BUILDINGS=[
+  {ico:"🏢",fr:"un immeuble",art:"un",ac:"am",en:"apartment building"},
+  {ico:"🏠",fr:"une maison",art:"une",ac:"af",en:"house"},
+  {ico:"🏡",fr:"une villa",art:"une",ac:"af",en:"villa"},
+  {ico:"🏗️",fr:"un studio",art:"un",ac:"am",en:"studio flat"},
+  {ico:"🏘️",fr:"un pavillon",art:"un",ac:"am",en:"bungalow"}
+];
+const ROOMS=[
+  {ico:"🛋️",fr:"le salon",art:"le",ac:"am",en:"living room"},
+  {ico:"🍳",fr:"la cuisine",art:"la",ac:"af",en:"kitchen"},
+  {ico:"🛏️",fr:"la chambre",art:"la",ac:"af",en:"bedroom"},
+  {ico:"🚿",fr:"la salle de bain",art:"la",ac:"af",en:"bathroom"},
+  {ico:"🌿",fr:"le balcon",art:"le",ac:"am",en:"balcony"},
+  {ico:"🌳",fr:"le jardin",art:"le",ac:"am",en:"garden"}
+];
+const STREETS=[
+  {ico:"🛣️",fr:"la rue",art:"la",ac:"af",en:"street"},
+  {ico:"🌿",fr:"l'avenue",art:"l'",ac:"av",en:"avenue"},
+  {ico:"🏙️",fr:"le quartier",art:"le",ac:"am",en:"neighbourhood"},
+  {ico:"🔢",fr:"l'étage",art:"l'",ac:"av",en:"floor"},
+  {ico:"📍",fr:"l'adresse",art:"l'",ac:"av",en:"address"},
+  {ico:"🏙️",fr:"le centre-ville",art:"le",ac:"am",en:"city centre"}
+];
+const BLUR_VOCAB=[...ROOMS.slice(0,4),...STREETS.slice(0,4)];
+const OWN_FILLS=[
+  {prompt:"J'habite dans ",hint:"type: un appartement / une maison / un studio...",type:"place",ex:"J'habite dans un appartement"},
+  {prompt:"Mon logement se trouve dans la rue / le quartier ",hint:"type your street or area name",type:"location",ex:"Mon logement se trouve dans la rue..."},
+  {prompt:"Dans mon logement, il y a ",hint:"list rooms: un salon, une cuisine... (use 'et' to connect)",type:"rooms",ex:"il y a un salon et deux chambres"},
+  {prompt:"J'habite avec ",hint:"ma famille / mon mari / mes parents / seul(e)...",type:"who",ex:"J'habite avec ma famille"},
+  {prompt:"J'aime mon quartier parce qu'il est ",hint:"calme / agréable / grand / petit / moderne...",type:"adj",ex:"calme et agréable"}
+];
+const HABITER=[
+  {pr:"J'",form:"habite",en:"I live",ex:"J'habite dans un appartement"},
+  {pr:"Tu",form:"habites",en:"you live",ex:"Tu habites où?"},
+  {pr:"Il/Elle",form:"habite",en:"he/she lives",ex:"Elle habite à Paris"},
+  {pr:"Nous",form:"habitons",en:"we live",ex:"Nous habitons en banlieue"},
+  {pr:"Vous",form:"habitez",en:"you live (formal)",ex:"Vous habitez dans quel quartier?"},
+  {pr:"Ils/Elles",form:"habitent",en:"they live",ex:"Ils habitent dans un immeuble"}
+];
+const VERBS={
+  aimer:{rows:[{pr:"J'",form:"aime"},{pr:"Tu",form:"aimes"},{pr:"Il/Elle",form:"aime"},{pr:"Nous",form:"aimons"},{pr:"Vous",form:"aimez"},{pr:"Ils/Elles",form:"aiment"}],note:"AIMER — to like / love"},
+  partager:{rows:[{pr:"Je",form:"partage"},{pr:"Tu",form:"partages"},{pr:"Il/Elle",form:"partage"},{pr:"Nous",form:"partageons"},{pr:"Vous",form:"partagez"},{pr:"Ils/Elles",form:"partagent"}],note:"PARTAGER — to share (⚠️ nous: partageons — keeps soft G)"},
+  regarder:{rows:[{pr:"Je",form:"regarde"},{pr:"Tu",form:"regardes"},{pr:"Il/Elle",form:"regarde"},{pr:"Nous",form:"regardons"},{pr:"Vous",form:"regardez"},{pr:"Ils/Elles",form:"regardent"}],note:"REGARDER — to watch / look at"}
+};
+const LINE_MIRRORS=[
+  {fr:"J'habite dans un appartement.",en:"I live in an apartment."},
+  {fr:"Mon quartier est très calme.",en:"My neighbourhood is very calm."},
+  {fr:"J'aime ma rue.",en:"I love my street."},
+  {fr:"Nous partageons la cuisine.",en:"We share the kitchen."}
+];
+const GRP_WORDS=["le salon","la cuisine","le balcon","la voiture","le quartier","la rue","l'appartement","la chambre","le jardin","l'adresse","le logement","la salle de bain"];
+const GRP_ANSWERS={
+  masc:["le salon","le balcon","le quartier","l'appartement","le jardin","le logement"],
+  fem:["la cuisine","la voiture","la rue","la chambre","l'adresse","la salle de bain"]
+};
+const TROUS=[
+  {before:"Marc habite dans une ",b1:"maison",middle:" à ",b2:"Lyon",after:".",hint1:"type de logement (féminin)",hint2:"ville en France"},
+  {before:"Il aime son ",b1:"quartier",middle:" parce qu'il est ",b2:"tranquille",after:".",hint1:"le... (voisinage)",hint2:"calme en français"},
+  {before:"Sa maison a un grand ",b1:"salon",middle:", une cuisine et trois ",b2:"chambres",after:".",hint1:"la pièce principale pour se reposer",hint2:"rooms for sleeping (plural)"},
+  {before:"Il ",b1:"travaille",middle:" dans le ",b2:"centre-ville",after:".",hint1:"il... = he [verb for work]",hint2:"le... = the city centre"},
+  {before:"Le soir, il ",b1:"regarde",middle:" la télévision dans le ",b2:"salon",after:".",hint1:"il... = he [verb for watch]",hint2:"the main room"}
+];
+const DIALOGUES=[
+  {q:"Où habitez-vous?",qe:"Where do you live?",a:"J'habite dans un appartement au centre-ville de Paris.",ae:"I live in an apartment in the city centre of Paris."},
+  {q:"Dans quel type de logement?",qe:"What type of home?",a:"J'habite dans un grand immeuble au cinquième étage.",ae:"I live in a large building on the fifth floor."},
+  {q:"Vous aimez votre quartier?",qe:"Do you like your neighbourhood?",a:"Oui, j'aime beaucoup mon quartier. Il est calme.",ae:"Yes, I really like my neighbourhood. It is calm."},
+  {q:"Avec qui habitez-vous?",qe:"Who do you live with?",a:"J'habite avec ma famille. Nous sommes quatre.",ae:"I live with my family. There are four of us."},
+  {q:"Combien de pièces avez-vous?",qe:"How many rooms do you have?",a:"Il y a cinq pièces: un salon, deux chambres, une cuisine et une salle de bain.",ae:"There are five rooms: a living room, two bedrooms, a kitchen and a bathroom."}
+];
+const CHUNKS=[
+  {fr:"J'habite dans...",en:"I live in..."},
+  {fr:"Mon logement se trouve...",en:"My home is located..."},
+  {fr:"Il y a un/une...",en:"There is a..."},
+  {fr:"J'habite avec...",en:"I live with..."},
+  {fr:"J'aime mon quartier parce que...",en:"I love my neighbourhood because..."},
+  {fr:"Mon appartement est...",en:"My apartment is..."},
+  {fr:"Dans ma rue, il y a...",en:"On my street, there is..."},
+  {fr:"Je partage... avec...",en:"I share... with..."}
+];
+const NEW_VOCAB=[
+  {fr:"lumineux/lumineuse",en:"bright (m/f)"},
+  {fr:"calme",en:"calm"},
+  {fr:"moderne",en:"modern"},
+  {fr:"spacieux/spacieuse",en:"spacious"},
+  {fr:"depuis",en:"since / for (time)"},
+  {fr:"près de",en:"close to"},
+  {fr:"au rez-de-chaussée",en:"on the ground floor"},
+  {fr:"au premier étage",en:"on the first floor"},
+  {fr:"le voisin / la voisine",en:"neighbour"},
+  {fr:"le loyer",en:"rent"}
+];
+const QUIZ_DATA=[
+  {q:"Which is correct: 'I live in an apartment'?",opts:["Je suis dans un appartement","J'habite dans un appartement","J'ai dans un appartement","Je fais dans un appartement"],ans:1,exp:"✅ J'habite = I live. Habiter is an -ER verb. J'habite dans un appartement."},
+  {q:"Conjugate TRAVAILLER for NOUS:",opts:["nous travaille","nous travaillons","nous travaillez","nous travaillent"],ans:1,exp:"✅ Nous travaillons — remove -ER, add -ONS for nous. The -ER pattern: -e,-es,-e,-ons,-ez,-ent."},
+  {q:"'La salle de bain' is feminine because:",opts:["It has 3 words","Salle is feminine","It has de in it","Bain is feminine"],ans:1,exp:"✅ Salle (room) is feminine → la salle. The whole compound noun takes the gender of the first noun."},
+  {q:"Which word is MASCULIN?",opts:["la cuisine","la chambre","le salon","la salle de bain"],ans:2,exp:"✅ Le salon is masculine. La cuisine, la chambre and la salle de bain are all feminine."},
+  {q:"How do you say 'We share the kitchen'?",opts:["Nous partageons la cuisine","Nous partager la cuisine","Nous partageons le cuisine","Nous partagez la cuisine"],ans:0,exp:"✅ Nous partageons — the nous form of partager adds an E (partageons) to keep the soft G sound. La cuisine is feminine."},
+  {q:"'Depuis' in French means:",opts:["Because","Since/For (ongoing time)","Near","With"],ans:1,exp:"✅ Depuis = since or for when talking about ongoing time. J'habite ici depuis 5 ans = I have been living here for 5 years (still living there)."}
+];
+
+// ============================================================
+// STATE
+// ============================================================
+let curAct=1,cTimer=null,timerSec=240,timerInterval=null,timerOn=false;
+let qzSel=new Array(QUIZ_DATA.length).fill(null),qzDone=false;
+let blobs={},mediaRecs={},dummyStates={};
+let verbFillDone=false,ownDone=false,trousDone=false,grpDone=false;
+let simMode=null,simIdx=0,simTimerInt=null,simSec=0;
+let step2Visible=false,enVisible=false;
+let grpInputs={masc:[],fem:[]};
+let grpWordList=[...GRP_WORDS];
+
+// ============================================================
+// SPEECH
+// ============================================================
+function getVoice(){
+  const vs=window.speechSynthesis.getVoices();
+  return vs.find(v=>v.lang==='fr-FR')||vs.find(v=>v.lang.startsWith('fr'))||null;
+}
+function spkText(t,btn,rate){
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(t);
+  const v=getVoice();if(v)u.voice=v;u.lang='fr-FR';u.rate=rate||0.82;u.pitch=1.02;
+  if(btn&&btn.classList){btn.classList.add('playing');u.onend=()=>btn.classList.remove('playing');}
+  window.speechSynthesis.speak(u);
+}
+function spkTextSlow(t,btn){spkText(t,btn,0.52);}
+function spkStory(rate){spkText(SOPHIE_FR,null,rate);}
+
+// SYNC LISTEN (word by word highlight)
+let syncInterval=null;
+function syncListen(rate,btn){
+  if(syncInterval)clearInterval(syncInterval);
+  window.speechSynthesis.cancel();
+  // render words
+  const el=document.getElementById('storyTxt');
+  el.innerHTML=SOPHIE_WORDS.map((w,i)=>`<span class="sw" id="sw${i}">${w} </span>`).join('');
+  let idx=0;
+  // ms per word based on rate
+  const msPerWord=rate>0.7?420:700;
+  const u=new SpeechSynthesisUtterance(SOPHIE_FR);
+  const v=getVoice();if(v)u.voice=v;u.lang='fr-FR';u.rate=rate;
+  if(btn&&btn.classList){btn.classList.add('playing');u.onend=()=>btn.classList.remove('playing');}
+  window.speechSynthesis.speak(u);
+  syncInterval=setInterval(()=>{
+    document.querySelectorAll('.sw').forEach(s=>s.classList.remove('hl'));
+    if(idx<SOPHIE_WORDS.length){const sw=document.getElementById('sw'+idx);if(sw){sw.classList.add('hl');sw.scrollIntoView({block:'nearest',behavior:'smooth'});}idx++;}
+    else clearInterval(syncInterval);
+  },msPerWord);
+}
+
+function showStep2(){
+  step2Visible=true;
+  document.getElementById('step2box').style.display='block';
+  // render story text
+  document.getElementById('storyTxt').innerHTML=SOPHIE_WORDS.map((w,i)=>`<span class="sw" id="sw${i}">${w} </span>`).join('');
+  showCoach('🎉 Great! Now listen again and follow the text. Then do the fill-in activity below!',6000);
+  document.getElementById('step2box').scrollIntoView({behavior:'smooth'});
+}
+function toggleEn(){
+  enVisible=!enVisible;
+  document.getElementById('storyEn').classList.toggle('show',enVisible);
+}
+function toggleSpeed(){
+  const btn=document.getElementById('speedBtn');
+  const cur=btn.textContent;
+  btn.textContent=cur==='0.8x'?'0.5x':'0.8x';
+  showCoach(cur==='0.8x'?'🐢 Switched to slow speed — great for beginners!':'🔊 Back to normal speed!',3000);
+}
+function togglePlay(){
+  const btn=document.getElementById('playBtn');
+  btn.textContent=btn.textContent==='▶'?'⏸':'▶';
+  showCoach(btn.textContent==='⏸'?'🎧 Playing Sophie\'s story...':'⏸ Paused.',3000);
+}
+function scrub(e){
+  const bar=document.getElementById('scrubBar');
+  const pct=e.offsetX/bar.offsetWidth;
+  document.getElementById('scrubFill').style.width=(pct*100)+'%';
+}
+
+// ============================================================
+// VERB FILLS
+// ============================================================
+function renderVerbFills(){
+  document.getElementById('verbFills').innerHTML=VERB_FILLS.map((f,i)=>`
+    <div class="fill-wrap" id="vfw${i}" style="margin-bottom:9px">
+      <div class="fill-q">${f.before}<input class="fill-inp" id="vfi${i}" placeholder="verb?" autocomplete="off" autocorrect="off" spellcheck="false">${f.after}</div>
+    </div>`).join('');
+}
+function checkVerbFills(){
+  let correct=0;
+  VERB_FILLS.forEach((f,i)=>{
+    const val=document.getElementById('vfi'+i).value.trim().toLowerCase();
+    const ok=val===f.blank.toLowerCase();
+    document.getElementById('vfi'+i).classList.toggle('ok',ok);
+    document.getElementById('vfi'+i).classList.toggle('bad',!ok);
+    if(ok)correct++;
+  });
+  const fb=document.getElementById('verbFillFb');fb.style.display='block';
+  const all=correct===VERB_FILLS.length;
+  fb.style.background=all?'#efffef':'#FFF9EC';
+  fb.style.color=all?'#1a8a45':'#8a5c00';
+  fb.textContent=all?'🎉 Perfect! All verbs correct — you are reading French properly now!':'✅ '+correct+'/'+VERB_FILLS.length+' correct. Check the highlighted boxes and try again. Look at the story text above for help!';
+  showCoach(all?'🌟 Incroyable! All verbs correct!':'💪 '+correct+' out of '+VERB_FILLS.length+'. Look at the story text above — the verbs are there!',5000);
+}
+function resetVerbFills(){
+  VERB_FILLS.forEach((_,i)=>{
+    const inp=document.getElementById('vfi'+i);inp.value='';inp.className='fill-inp';
+  });
+  document.getElementById('verbFillFb').style.display='none';
+  showCoach('🔄 Reset! Try the verbs again — practice makes perfect.',3000);
+}
+
+// ============================================================
+// UNDERSTAND BAR
+// ============================================================
+function renderUbar(id,fbId){
+  const opts=[{l:"😕 Not much",v:1},{l:"🤔 A little",v:2},{l:"🙂 Most of it",v:3},{l:"🎉 Almost all!",v:4}];
+  document.getElementById(id).innerHTML=opts.map((o,i)=>`<button class="ubtn" id="${id}btn${i}" onclick="selectUbar('${id}','${fbId}',${o.v},${i})">${o.l}</button>`).join('');
+}
+function selectUbar(ubId,fbId,v,idx){
+  document.querySelectorAll(`#${ubId} .ubtn`).forEach(b=>b.classList.remove('sel'));
+  document.getElementById(ubId+'btn'+idx).classList.add('sel');
+  const fb=document.getElementById(fbId);fb.style.display='block';
+  const msgs={
+    1:{bg:'#fff0f0',col:'#b03030',msg:"That's completely normal at A1 level! You need at least 3 listens. Press listen again and focus on the words you know. Every listen makes a difference."},
+    2:{bg:'#FFF9EC',col:'#8a5c00',msg:"Good! You are making progress. Listen one more time and look at the vocabulary cards in Activity 2 for the words you missed."},
+    3:{bg:'#e8fff0',col:'#1a8a45',msg:"🎉 Excellent! You are doing really well for your level. One more listen to catch the last details!"},
+    4:{bg:'#efffef',col:'#1a8a45',msg:"🏆 FÉLICITATIONS! You understood almost everything! Your ear is already training fast. Keep this up and C1 is coming."}
+  };
+  const m=msgs[v];fb.style.background=m.bg;fb.style.color=m.col;fb.textContent=m.msg;
+  showCoach(v<=2?'💡 Listen 3 times — that is the rule for A1 learners. Press listen again!':'🌟 Your comprehension is building! Amazing for this stage.',5000);
+}
+
+// ============================================================
+// VOCAB GRIDS
+// ============================================================
+function renderVocabGrids(){
+  const render=(id,items)=>document.getElementById(id).innerHTML=items.map(v=>`
+    <div class="vcard" onclick="spkText('${v.fr.replace(/'/g,"\\'")}',null)">
+      <div class="vico">${v.ico}</div>
+      <div class="vfr">${v.fr}</div>
+      <div class="vart ${v.ac}">${v.art}</div>
+      <div class="ven">${v.en}</div>
+    </div>`).join('');
+  render('bldGrid',BUILDINGS);render('roomGrid',ROOMS);render('streetGrid',STREETS);
+  // BLUR GRID
+  document.getElementById('blurGrid').innerHTML=BLUR_VOCAB.map((v,i)=>`
+    <div class="vcard blurred" id="blv${i}" onclick="unblur(${i},'${v.fr.replace(/'/g,"\\'")}')">
+      <div class="vico">${v.ico}</div>
+      <div class="vfr">${v.fr}</div>
+      <div class="vart ${v.ac}">${v.art}</div>
+      <div class="ven">${v.en}</div>
+    </div>`).join('');
+}
+function unblur(i,fr){
+  document.getElementById('blv'+i).classList.remove('blurred');
+  spkText(fr,null);
+  showCoach('🔊 '+fr+' — say it back!',3000);
+}
+function resetBlur(){
+  BLUR_VOCAB.forEach((_,i)=>document.getElementById('blv'+i).classList.add('blurred'));
+  showCoach('🔄 All blurred again! Can you remember them this time?',4000);
+}
+
+// ============================================================
+// OWN FILLS
+// ============================================================
+function renderOwnFills(){
+  document.getElementById('ownFills').innerHTML=OWN_FILLS.map((f,i)=>`
+    <div class="os-wrap">
+      <div class="os-prompt">${i+1}. ${f.prompt}<span style="color:var(--gy);font-size:.78rem"> (${f.hint})</span></div>
+      <input class="os-inp" id="of${i}" placeholder="Écrivez ici..." autocomplete="off" autocorrect="off">
+      <div style="font-size:.72rem;color:var(--gy);margin-top:4px">Example: <em>${f.ex}</em></div>
+    </div>`).join('');
+}
+function checkOwn(){
+  const fb=document.getElementById('ownFb');fb.style.display='block';
+  let html='<div style="background:#efffef;border-radius:12px;padding:13px">';
+  OWN_FILLS.forEach((f,i)=>{
+    const val=document.getElementById('of'+i).value.trim();
+    if(!val){html+=`<p style="color:#b03030;font-size:.82rem;margin-bottom:5px">❌ Sentence ${i+1}: Please write something!</p>`;return;}
+    const full=f.prompt+val;
+    html+=`<p style="color:#1a8a45;font-size:.82rem;margin-bottom:5px">✅ <strong>Your sentence:</strong> ${full}</p>`;
+    html+=`<p style="color:#555;font-size:.76rem;margin-bottom:8px;padding-left:12px">🔊 <em>Translation check: "${full}" — Does this match what you want to say? If not, adjust!</em></p>`;
+    // Play the sentence
+  });
+  html+='<div style="background:var(--cr);border-radius:9px;padding:9px;margin-top:8px;font-size:.78rem;color:var(--br)">💡 <strong>Check:</strong> Read each sentence above. Does the English translation make sense? If something looks wrong, correct it and check again!</div>';
+  html+='</div>';
+  fb.innerHTML=html;
+  // speak first sentence
+  const v0=document.getElementById('of0').value.trim();
+  if(v0)setTimeout(()=>spkText(OWN_FILLS[0].prompt+v0,null,0.8),500);
+  showCoach('🎉 Great effort! Read the English translations — do they match what you wanted to say?',6000);
+}
+function resetOwn(){
+  OWN_FILLS.forEach((_,i)=>document.getElementById('of'+i).value='');
+  document.getElementById('ownFb').style.display='none';
+  showCoach('🔄 Reset! Write about YOUR home again. No wrong answers — just write!',4000);
+}
+
+// ============================================================
+// VERB TABLE + CONJUGATION PRACTICE
+// ============================================================
+function renderVerbTable(){
+  const stem='habit';
+  document.getElementById('habiterTable').innerHTML=`
+    <tr><th>Pronoun</th><th>HABITER</th><th>English</th><th>Listen + Shadow</th></tr>
+    ${HABITER.map((r,i)=>`
+      <tr>
+        <td style="font-weight:700;color:var(--br)">${r.pr}</td>
+        <td style="font-size:1rem;font-weight:800;color:var(--br)">${r.pr==="J'"?'J\'':''}<span style="color:var(--gy)">${stem}</span><span class="end">${r.form.replace(stem,'')}</span></td>
+        <td style="color:var(--gy);font-size:.8rem">${r.en}</td>
+        <td><div class="aud-row" style="margin-top:0;gap:5px">
+          <button class="btn btn-br" style="min-height:38px;padding:0 10px;font-size:.72rem" onclick="spkText('${r.ex.replace(/'/g,"\\'")}',this)">🔊</button>
+          <button class="btn-rec" id="htRec${i}" style="min-height:38px;padding:0 10px;font-size:.72rem" onclick="dRec('htRec${i}','htPb${i}')">🎤</button>
+          <button class="btn-pb" id="htPb${i}" style="min-height:38px;padding:0 10px;font-size:.72rem" onclick="pBlob('htPb${i}')">▶</button>
+        </div></td>
+      </tr>`).join('')}`;
+}
+
+function renderConjFills(verbKey){
+  const v=VERBS[verbKey];
+  const stem=verbKey.slice(0,-2);
+  document.getElementById(verbKey+'Fills').innerHTML=`
+    <div style="font-size:.8rem;font-weight:800;color:var(--br);margin-bottom:8px">${v.note}</div>
+    ${v.rows.map((r,i)=>`
+      <div class="fill-wrap" style="margin-bottom:8px">
+        <div class="fill-q">${r.pr} <input class="fill-inp" id="${verbKey}${i}" placeholder="conjugation..." autocomplete="off" autocorrect="off" spellcheck="false"></div>
+      </div>`).join('')}`;
+}
+function checkVerb(vk){
+  const v=VERBS[vk];let ok=0;
+  v.rows.forEach((r,i)=>{
+    const inp=document.getElementById(vk+i);
+    const val=inp.value.trim().toLowerCase();
+    const correct=val===r.form.toLowerCase();
+    inp.classList.toggle('ok',correct);inp.classList.toggle('bad',!correct);
+    if(correct)ok++;
+    else if(val.length>0&&val[0]===r.form[0]){inp.classList.remove('bad');inp.classList.add('bad');}
+  });
+  const fb=document.getElementById(vk+'Fb');fb.style.display='block';
+  fb.style.background=ok===v.rows.length?'#efffef':'#FFF9EC';
+  fb.style.color=ok===v.rows.length?'#1a8a45':'#8a5c00';
+  if(ok===v.rows.length){
+    fb.textContent='🎉 Perfect! All '+vk+' forms correct!';
+    spkText(v.rows.map(r=>r.pr+' '+r.form).join(', '),null,0.8);
+  } else {
+    const wrong=v.rows.filter((r,i)=>document.getElementById(vk+i).value.trim().toLowerCase()!==r.form.toLowerCase());
+    fb.textContent='✅ '+ok+'/'+v.rows.length+' correct. Wrong forms: '+wrong.map(r=>r.pr+' → '+r.form).join(', ')+'. Remember: remove -ER and add -e/-es/-e/-ons/-ez/-ent';
+  }
+  showCoach(ok===v.rows.length?'🏆 Parfait! '+vk+' mastered!':'💡 Check the endings: -e · -es · -e · -ons · -ez · -ent',4500);
+}
+function resetVerb(vk){
+  VERBS[vk].rows.forEach((_,i)=>{const inp=document.getElementById(vk+i);inp.value='';inp.className='fill-inp';});
+  document.getElementById(vk+'Fb').style.display='none';
+}
+
+// LINE MIRRORS
+function renderLineMirrors(){
+  document.getElementById('lineMirror').innerHTML=LINE_MIRRORS.map((l,i)=>`
+    <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
+      <div style="font-weight:800;color:var(--br);font-size:.88rem">${l.fr}</div>
+      <div style="font-size:.74rem;color:var(--gy)">${l.en}</div>
+      <div class="aud-row" style="margin-top:7px;gap:6px">
+        <button class="btn btn-br" style="min-height:38px;padding:0 12px;font-size:.74rem" onclick="spkText('${l.fr.replace(/'/g,"\\'")}',this)">🔊 Hear</button>
+        <button class="btn-rec" id="lmRec${i}" style="min-height:38px;padding:0 12px;font-size:.74rem" onclick="dRec('lmRec${i}','lmPb${i}')">🎤 Shadow</button>
+        <button class="btn-pb" id="lmPb${i}" style="min-height:38px;padding:0 12px;font-size:.74rem" onclick="pBlob('lmPb${i}')">▶️</button>
+      </div>
+    </div>`).join('');
+}
+
+// ============================================================
+// GROUPING
+// ============================================================
+function renderGrouping(){
+  grpWordList=[...GRP_WORDS];
+  const container=document.getElementById('grpWords');
+  container.innerHTML=grpWordList.map(w=>`<span class="grp-word" onclick="spkText('${w.replace(/'/g,"\\'")}',null)">${w}</span>`).join('');
+  // render input columns
+  const mascInputs=GRP_ANSWERS.masc.length;const femInputs=GRP_ANSWERS.fem.length;
+  document.getElementById('mascCol').innerHTML=Array(mascInputs).fill(0).map((_,i)=>`<input class="grp-inp" id="mi${i}" placeholder="type a word..." autocomplete="off" autocorrect="off" spellcheck="false">`).join('');
+  document.getElementById('femCol').innerHTML=Array(femInputs).fill(0).map((_,i)=>`<input class="grp-inp" id="fi${i}" placeholder="type a word..." autocomplete="off" autocorrect="off" spellcheck="false">`).join('');
+}
+function checkGrouping(){
+  const mascVals=GRP_ANSWERS.masc.map((_,i)=>document.getElementById('mi'+i).value.trim().toLowerCase());
+  const femVals=GRP_ANSWERS.fem.map((_,i)=>document.getElementById('fi'+i).value.trim().toLowerCase());
+  let mOk=0,fOk=0;
+  GRP_ANSWERS.masc.forEach((w,i)=>{
+    const ok=mascVals[i]===w.toLowerCase()||mascVals[i]===w.replace("l'","l'").toLowerCase();
+    document.getElementById('mi'+i).classList.toggle('ok',ok);document.getElementById('mi'+i).classList.toggle('bad',!ok);if(ok)mOk++;
+  });
+  GRP_ANSWERS.fem.forEach((w,i)=>{
+    const ok=femVals[i]===w.toLowerCase()||femVals[i]===w.replace("l'","l'").toLowerCase();
+    document.getElementById('fi'+i).classList.toggle('ok',ok);document.getElementById('fi'+i).classList.toggle('bad',!ok);if(ok)fOk++;
+  });
+  const total=mOk+fOk,max=GRP_ANSWERS.masc.length+GRP_ANSWERS.fem.length;
+  const fb=document.getElementById('grpFb');fb.style.display='block';
+  const all=total===max;
+  fb.style.background=all?'#efffef':'#FFF9EC';fb.style.color=all?'#1a8a45':'#8a5c00';
+  if(all)fb.innerHTML='🎉 Perfect! All '+max+' words correctly grouped! Your gender instinct is developing fast.';
+  else {
+    fb.innerHTML='✅ '+total+'/'+max+' correct.<br>';
+    if(mOk<GRP_ANSWERS.masc.length)fb.innerHTML+='💙 Masculine corrections: '+GRP_ANSWERS.masc.filter((_,i)=>mascVals[i]!==GRP_ANSWERS.masc[i].toLowerCase()).join(', ')+'<br>';
+    if(fOk<GRP_ANSWERS.fem.length)fb.innerHTML+='💗 Feminine corrections: '+GRP_ANSWERS.fem.filter((_,i)=>femVals[i]!==GRP_ANSWERS.fem[i].toLowerCase()).join(', ');
+    fb.innerHTML+='<br>💡 Reminder: -ment,-age,-eau = often masculine · -tion,-té,-ure = often feminine';
+  }
+  showCoach(all?'🏆 Gender mastery! Every word correct!':'💡 Check the ending patterns: -ment/-age = masc · -tion/-ure = fem',5000);
+}
+function resetGrouping(){
+  GRP_ANSWERS.masc.forEach((_,i)=>{const inp=document.getElementById('mi'+i);inp.value='';inp.className='grp-inp';});
+  GRP_ANSWERS.fem.forEach((_,i)=>{const inp=document.getElementById('fi'+i);inp.value='';inp.className='grp-inp';});
+  document.getElementById('grpFb').style.display='none';
+  showCoach('🔄 Reset! Sort the words again — you can do it from memory this time!',4000);
+}
+
+// ============================================================
+// TEXTE À TROUS
+// ============================================================
+function renderTrous(){
+  document.getElementById('trousEx').innerHTML=TROUS.map((t,i)=>`
+    <div class="trous-sent" id="ts${i}">
+      <div style="font-size:.72rem;font-weight:800;color:var(--am);margin-bottom:6px">Sentence ${i+1}</div>
+      ${t.before}<input class="trous-inp" id="ta${i}" placeholder="${t.hint1}" autocomplete="off" autocorrect="off" spellcheck="false">${t.middle}<input class="trous-inp" id="tb${i}" placeholder="${t.hint2}" autocomplete="off" autocorrect="off" spellcheck="false">${t.after}
+      <div class="trous-fb" id="tf${i}"></div>
+    </div>`).join('');
+}
+function checkTrous(){
+  let ok=0,total=TROUS.length*2;
+  TROUS.forEach((t,i)=>{
+    const a=document.getElementById('ta'+i).value.trim().toLowerCase();
+    const b=document.getElementById('tb'+i).value.trim().toLowerCase();
+    const aOk=a===t.b1.toLowerCase();const bOk=b===t.b2.toLowerCase();
+    document.getElementById('ta'+i).classList.toggle('ok',aOk);document.getElementById('ta'+i).classList.toggle('bad',!aOk);
+    document.getElementById('tb'+i).classList.toggle('ok',bOk);document.getElementById('tb'+i).classList.toggle('bad',!bOk);
+    if(aOk)ok++;if(bOk)ok++;
+    const fb=document.getElementById('tf'+i);fb.style.display='block';
+    if(aOk&&bOk){fb.style.color='#1a8a45';fb.textContent='✅ Both correct!';}
+    else{fb.style.color='#b03030';fb.textContent='❌ Answers: "'+t.b1+'" and "'+t.b2+'"';}
+    document.getElementById('ts'+i).classList.toggle('ok',aOk&&bOk);document.getElementById('ts'+i).classList.toggle('bad',!aOk||!bOk);
+  });
+  const fb=document.getElementById('trousFb');fb.style.display='block';
+  const all=ok===total;
+  fb.style.background=all?'#efffef':'#FFF9EC';fb.style.color=all?'#1a8a45':'#8a5c00';
+  fb.textContent=all?'🎉 Perfect score! You filled all '+total+' gaps correctly. Your listening comprehension is working!':'✅ '+ok+'/'+total+' correct. Listen again and check the highlighted gaps. The answers are always in the vocabulary you have already learned.';
+  showCoach(all?'🏆 ALL gaps correct! Listening + writing = powerful combo!':'💡 '+ok+' correct. Listen one more time — the words are there!',5000);
+}
+function resetTrous(){
+  TROUS.forEach((t,i)=>{
+    ['ta','tb'].forEach(p=>{const inp=document.getElementById(p+i);inp.value='';inp.className='trous-inp';});
+    document.getElementById('ts'+i).className='trous-sent';
+    document.getElementById('tf'+i).style.display='none';
+  });
+  document.getElementById('trousFb').style.display='none';
+  showCoach('🔄 Reset! Listen again and fill the gaps. Each listen builds your ear.',4000);
+}
+
+// ============================================================
+// DIALOGUE
+// ============================================================
+function renderDialogue(){
+  document.getElementById('dialPractice').innerHTML=DIALOGUES.map((d,i)=>`
+    <div style="margin-bottom:16px;background:var(--cr);border-radius:14px;padding:14px">
+      <div style="font-size:.7rem;font-weight:800;color:var(--am);text-transform:uppercase;margin-bottom:8px">Pair ${i+1}</div>
+      <div style="font-weight:800;color:var(--br);font-size:.9rem;margin-bottom:2px">Q: ${d.q}</div>
+      <div style="color:var(--gy);font-size:.76rem;margin-bottom:8px">${d.qe}</div>
+      <div style="font-weight:700;color:#3D2B1F;font-size:.88rem;margin-bottom:2px">A: ${d.a}</div>
+      <div style="color:var(--gy);font-size:.76rem;margin-bottom:8px">${d.ae}</div>
+      <div class="aud-row" style="gap:6px">
+        <button class="btn btn-br" style="min-height:38px;padding:0 12px;font-size:.74rem" onclick="spkText('${d.q.replace(/'/g,"\\'")}',this)">🔊 Q</button>
+        <button class="btn btn-cr" style="min-height:38px;padding:0 12px;font-size:.74rem" onclick="spkText('${d.a.replace(/'/g,"\\'")}',this)">🔊 A</button>
+      </div>
+    </div>`).join('');
+  document.getElementById('dialMirrors').innerHTML=DIALOGUES.map((d,i)=>`
+    <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:.84rem;color:var(--br)">${d.a}</div>
+      <div class="aud-row" style="margin-top:6px;gap:5px">
+        <button class="btn btn-br" style="min-height:36px;padding:0 10px;font-size:.72rem" onclick="spkText('${d.a.replace(/'/g,"\\'")}',this)">🔊</button>
+        <button class="btn-rec" id="dm${i}" style="min-height:36px;padding:0 10px;font-size:.72rem" onclick="dRec('dm${i}','dp${i}')">🎤</button>
+        <button class="btn-pb" id="dp${i}" style="min-height:36px;padding:0 10px;font-size:.72rem" onclick="pBlob('dp${i}')">▶</button>
+      </div>
+    </div>`).join('');
+}
+
+// SIMULATION
+function startSim(mode){
+  simMode=mode;simIdx=0;
+  const sec=mode==='slow'?15:10;
+  const container=document.getElementById('sim'+mode[0].toUpperCase()+mode.slice(1));
+  document.getElementById('start'+(mode==='slow'?'Slow':'Fast')+'Btn').style.display='none';
+  container.style.display='block';
+  runSimStep(mode);
+  showCoach(mode==='slow'?'🐢 Slow simulation started! Read the answer aloud in 15 seconds.':'⚡ Fast simulation! 10 seconds — answer from memory!',5000);
+}
+function runSimStep(mode){
+  if(simIdx>=DIALOGUES.length){endSim(mode);return;}
+  const d=DIALOGUES[simIdx];
+  const sec=mode==='slow'?15:10;
+  const id='sim'+mode[0].toUpperCase()+mode.slice(1);
+  document.getElementById(id).innerHTML=`
+    <div class="sim-q">
+      <div class="sim-progress">${DIALOGUES.map((_,i)=>`<div class="sim-dot ${i<simIdx?'done':i===simIdx?'current':''}"></div>`).join('')}</div>
+      <div style="font-size:.7rem;color:rgba(255,255,255,.5);margin-bottom:8px">Question ${simIdx+1} of ${DIALOGUES.length}</div>
+      <div class="sim-q-text">${d.q}</div>
+      <div class="sim-q-en">${d.qe}</div>
+      <div class="sim-timer" id="simT">:${sec<10?'0'+sec:sec}</div>
+      ${mode==='slow'?`<div class="answer-reveal show" style="font-size:.86rem;font-weight:700">📖 Answer: ${d.a}</div>`:''}
+      <button class="btn btn-gn" style="margin-top:10px;min-height:44px;width:100%;justify-content:center" onclick="nextSim('${mode}')">✅ I said it — Next →</button>
+    </div>`;
+  spkText(d.q,null);
+  let t=sec;
+  if(simTimerInt)clearInterval(simTimerInt);
+  simTimerInt=setInterval(()=>{
+    t--;
+    const el=document.getElementById('simT');
+    if(!el){clearInterval(simTimerInt);return;}
+    el.textContent=':'+(t<10?'0'+t:t);
+    if(t<=5)el.classList.add('urgent');
+    if(t<=0){clearInterval(simTimerInt);simIdx++;runSimStep(mode);}
+  },1000);
+}
+function nextSim(mode){
+  clearInterval(simTimerInt);simIdx++;runSimStep(mode);
+}
+function endSim(mode){
+  const id='sim'+mode[0].toUpperCase()+mode.slice(1);
+  document.getElementById(id).innerHTML=`<div style="background:#efffef;border-radius:14px;padding:16px;text-align:center"><div style="font-size:1.4rem;margin-bottom:8px">🎉</div><div style="font-weight:800;color:#1a8a45;font-size:.95rem">Simulation Complete!</div><div style="font-size:.82rem;color:#555;margin-top:6px">${mode==='slow'?'Great job with the slow version! Now try the fast simulation to build speed.':'Excellent! Repeat until the answers come automatically.'}</div><button class="redo-btn" style="margin-top:10px" onclick="restartSim('${mode}')">🔄 Repeat Simulation</button></div>`;
+  showCoach(mode==='slow'?'🎉 Slow simulation done! Now try the fast one — you are ready!':'🏆 Fast simulation complete! This is real exam practice.',5000);
+}
+function restartSim(mode){
+  simIdx=0;
+  document.getElementById('start'+(mode==='slow'?'Slow':'Fast')+'Btn').style.display='none';
+  runSimStep(mode);
+}
+
+// ============================================================
+// WRITING
+// ============================================================
+function renderChunks(){
+  document.getElementById('chunkGrid').innerHTML=CHUNKS.map(c=>`
+    <div class="chunk" onclick="appendChunk('${c.fr.replace(/'/g,"\\'")}')">
+      <div class="cfr">${c.fr}</div>
+      <div class="cen">${c.en}</div>
+    </div>`).join('');
+  document.getElementById('newVocab').innerHTML=NEW_VOCAB.map(v=>`
+    <div style="background:var(--cr);border-radius:50px;padding:6px 13px;cursor:pointer;border:2px solid var(--am)" onclick="spkText('${v.fr.replace(/'/g,"\\'")}',null)">
+      <span style="font-weight:800;color:var(--br);font-size:.8rem">${v.fr}</span>
+      <span style="color:var(--gy);font-size:.73rem"> = ${v.en}</span>
+    </div>`).join('');
+}
+function appendChunk(text){
+  const ta=document.getElementById('wArea');
+  ta.value+=(ta.value&&!ta.value.endsWith(' ')?' ':'')+text;
+  ta.focus();updateWC();
+  showCoach('✅ "'+text+'" added to your writing!',2500);
+}
+function updateWC(){
+  const t=document.getElementById('wArea').value.trim();
+  document.getElementById('wCount').textContent=(t?t.split(/\s+/).length:0)+' words';
+}
+
+function renderWriteMirrors(){
+  const sents=["J'habite dans un appartement au deuxième étage.","Mon quartier est calme et moderne.","Il y a un salon, une cuisine et deux chambres.","J'habite avec ma famille depuis cinq ans.","J'aime mon quartier parce qu'il est lumineux."];
+  document.getElementById('writeMirrors').innerHTML=sents.map((s,i)=>`
+    <div style="background:rgba(255,255,255,.6);border-radius:10px;padding:10px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:.85rem;color:var(--br)">${s}</div>
+      <div class="aud-row" style="margin-top:6px;gap:5px">
+        <button class="btn btn-br" style="min-height:36px;padding:0 10px;font-size:.72rem" onclick="spkText('${s.replace(/'/g,"\\'")}',this)">🔊</button>
+        <button class="btn-rec" id="wm${i}" style="min-height:36px;padding:0 10px;font-size:.72rem" onclick="dRec('wm${i}','wp${i}')">🎤</button>
+        <button class="btn-pb" id="wp${i}" style="min-height:36px;padding:0 10px;font-size:.72rem" onclick="pBlob('wp${i}')">▶</button>
+      </div>
+    </div>`).join('');
+}
+
+function checkWriting(){
+  const t=document.getElementById('wArea').value.trim();
+  if(!t){showCoach('✍️ Write your paragraph first!',3000);return;}
+  const wc=t.split(/\s+/).length;
+  const hasHabite=/habit/i.test(t);
+  const hasVerb=/aime|travail|regard|partag|écoute/i.test(t);
+  const hasRoom=/salon|cuisine|chambre|salle|balcon|jardin/i.test(t);
+  const hasWho=/avec|famille|mari|parents|seul/i.test(t);
+  const hasAdj=/calme|moderne|lumineux|spacieux|grand|petit/i.test(t);
+  let issues=[],good=[];
+  if(!hasHabite)issues.push('❌ Missing HABITER — try: "J\'habite dans..."');else good.push('✅ HABITER used correctly');
+  if(!hasVerb)issues.push('💡 Try adding another -ER verb: regarder, travailler, partager, écouter');else good.push('✅ Good use of -ER verbs');
+  if(!hasRoom)issues.push('💡 Describe your rooms: "Il y a un salon, une cuisine..."');else good.push('✅ Room vocabulary present');
+  if(!hasWho)issues.push('💡 Who do you live with? "J\'habite avec..."');else good.push('✅ Living situation mentioned');
+  if(!hasAdj)issues.push('💡 Add one adjective: calme, moderne, lumineux, grand...');else good.push('✅ Adjective used — great for TCF!');
+  if(wc<30)issues.push('📝 You have '+wc+' words. Try to reach at least 60 words for exam practice.');
+  const fb=document.getElementById('writeFb');fb.style.display='block';
+  fb.style.background=issues.length===0?'#efffef':'#FFF9EC';fb.style.color=issues.length===0?'#1a8a45':'#3D2B1F';
+  fb.innerHTML=good.map(g=>`<p>${g}</p>`).join('')+(issues.length?'<hr style="margin:8px 0;border-color:#d4b896">'+issues.map(i=>`<p>${i}</p>`).join(''):'');
+  if(issues.length===0){showCoach('🏆 Excellent paragraph! Screenshot it now and share in the community!',6000);}
+  else{showCoach('💪 Good start! Fix the suggestions above then check again.',5000);}
+  // Read writing aloud
+  setTimeout(()=>spkText(t,null,0.8),800);
+}
+function copyWriting(){
+  const t=document.getElementById('wArea').value.trim();
+  if(!t){showCoach('Write your paragraph first!',3000);return;}
+  navigator.clipboard.writeText(t).then(()=>{
+    document.getElementById('copyFb').style.display='block';
+    showCoach('📋 Copied! Go to the community and paste it as your voice or video note. Coach Linda will respond!',6000);
+  }).catch(()=>{document.getElementById('copyFb').textContent='📋 Select and copy your text manually from the box above.';document.getElementById('copyFb').style.display='block';});
+}
+
+// ============================================================
+// TIMER
+// ============================================================
+function startTimer(){
+  if(timerOn)return;timerOn=true;
+  document.getElementById('timerStart').textContent='⏱️ Writing...';
+  document.getElementById('timerStart').disabled=true;
+  document.getElementById('timerReset').style.display='inline-flex';
+  showCoach('⏱️ Go! Write freely — don\'t stop to translate. Your brain knows more than you think!',5000);
+  timerInterval=setInterval(()=>{
+    timerSec--;const m=Math.floor(timerSec/60),s=timerSec%60;
+    document.getElementById('timerDisp').textContent=m+':'+(s<10?'0':'')+s;
+    document.getElementById('timerBar').style.width=(timerSec/240*100)+'%';
+    if(timerSec===60)showCoach('⚡ One minute left! Write your closing sentence.',0);
+    if(timerSec<=0){clearInterval(timerInterval);timerOn=false;document.getElementById('timerDisp').textContent='0:00';document.getElementById('timerStart').textContent='✅ Time Up!';showCoach('🎉 Time up! Count your words, check your writing, then screenshot and share!',7000);}
+  },1000);
+}
+function resetTimer(){
+  clearInterval(timerInterval);timerOn=false;timerSec=240;
+  document.getElementById('timerDisp').textContent='4:00';
+  document.getElementById('timerBar').style.width='100%';
+  document.getElementById('timerStart').textContent='▶️ Start Timer';
+  document.getElementById('timerStart').disabled=false;
+  document.getElementById('timerReset').style.display='none';
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function renderQuiz(){
+  document.getElementById('quizContent').innerHTML=QUIZ_DATA.map((q,i)=>`
+    <div class="qwrap" id="qw${i}">
+      <div class="qtxt">${i+1}. ${q.q}</div>
+      <div class="qopts">${q.opts.map((o,j)=>`<div class="qopt" id="qo${i}_${j}" onclick="selQ(${i},${j})">${o}</div>`).join('')}</div>
+      <div class="qex" id="qe${i}"></div>
+    </div>`).join('');
+}
+function selQ(qi,oi){if(qzDone)return;QUIZ_DATA[qi].opts.forEach((_,j)=>document.getElementById(`qo${qi}_${j}`).className='qopt'+(j===oi?' sel':''));qzSel[qi]=oi;}
+function submitQuiz(){
+  if(qzDone)return;
+  const blank=qzSel.filter(a=>a===null).length;
+  if(blank>0){alert('Please answer all '+blank+' question(s).');return;}
+  qzDone=true;document.getElementById('btnSub').style.display='none';
+  let score=0;
+  QUIZ_DATA.forEach((q,i)=>{
+    const ok=qzSel[i]===q.ans;if(ok)score++;
+    q.opts.forEach((_,j)=>{const b=document.getElementById(`qo${i}_${j}`);b.classList.add('dis');if(j===q.ans)b.classList.add('co');else if(j===qzSel[i]&&!ok)b.classList.add('wo');});
+    const ex=document.getElementById('qe'+i);ex.textContent=q.exp;ex.classList.add('show');
+  });
+  const pass=score>=5;
+  const sc=document.getElementById('scoreCard');sc.style.display='block';
+  sc.innerHTML=`<div class="sc-card" style="background:${pass?'#efffef':'#fff0f0'};border-color:${pass?'var(--gn)':'var(--rd)'}">
+    <div style="font-size:3.5rem;font-weight:900;color:${pass?'var(--gn)':'var(--rd)'}">${score}<span style="font-size:1.6rem;color:var(--gy)">/6</span></div>
+    <div style="font-size:.95rem;font-weight:800;margin:8px 0;color:${pass?'#1a8a45':'#b03030'}">${pass?'🎉 Day 5 Complete! Tu es fantastique!':'📚 Almost! Review -ER verbs and try again.'}</div>
+    <div style="font-size:.83rem;color:#555;margin-bottom:16px">${pass?'Listening, vocabulary, -ER verbs, gender, texte à trous — all done today!':'Review Activity 3 (verbs) then retake.'}</div>
+    ${pass?`<a href="#platform" style="background:var(--br);color:#fff;border-radius:50px;padding:10px 22px;font-weight:800;text-decoration:none;font-size:.86rem;display:inline-block">🚀 Continue to Day 6</a>`:`<button onclick="retakeQ()" style="background:var(--rd);color:#fff;border:none;border-radius:50px;padding:10px 22px;font-weight:800;cursor:pointer">🔄 Retake</button>`}
+  </div>`;
+  showCoach(pass?'🏆 Day 5 DONE! You just did listening, grammar, writing AND simulation practice. That is a real French learning day!':'💪 Almost! One more look at the -ER verb endings and you will pass. Je crois en toi!',9000);
+  sc.scrollIntoView({behavior:'smooth'});
+}
+function retakeQ(){qzDone=false;qzSel=new Array(QUIZ_DATA.length).fill(null);renderQuiz();document.getElementById('btnSub').style.display='inline-flex';}
+
+// ============================================================
+// RECORDING
+// ============================================================
+async function dRec(recId,pbId){
+  const btn=document.getElementById(recId);if(!btn)return;
+  if(mediaRecs[recId]&&mediaRecs[recId].state==='recording'){mediaRecs[recId].stop();return;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    let chunks=[];const mr=new MediaRecorder(stream);mediaRecs[recId]=mr;
+    mr.ondataavailable=e=>{if(e.data.size>0)chunks.push(e.data);};
+    mr.onstop=()=>{
+      blobs[pbId]=new Blob(chunks,{type:'audio/webm'});stream.getTracks().forEach(t=>t.stop());
+      btn.classList.remove('on');btn.textContent='🎤 Record Again';
+      const pb=document.getElementById(pbId);if(pb)pb.classList.add('show');
+      showCoach('✅ Recorded! Press ▶️ to hear yourself.',3500);
+    };
+    mr.start();btn.classList.add('on');btn.textContent='⏹ Stop Recording';
+    showCoach('🎤 Recording... Speak clearly. Press Stop when you finish.',0);
+  } catch(e){
+    // Dummy fallback
+    if(btn.classList.contains('on')){btn.classList.remove('on');btn.textContent='🎤 Record Again';showCoach('✅ Done! Record again for more practice.',3000);}
+    else{btn.classList.add('on');btn.textContent='⏹ Stop Recording';showCoach('🎤 Recording... Press Stop when done.',0);}
+  }
+}
+function pBlob(pbId){
+  if(!blobs[pbId])return;
+  const url=URL.createObjectURL(blobs[pbId]);new Audio(url).play();
+  showCoach('👂 Listen to yourself — compare your rhythm to the native speaker. Record again!',5000);
+}
+
+// ============================================================
+// NAV + DOTS
+// ============================================================
+function goAct(n){
+  document.getElementById('act'+curAct).classList.remove('show');
+  curAct=n;document.getElementById('act'+curAct).classList.add('show');
+  updDots();document.getElementById('progBar').style.width=(((n-1)/7)*100)+'%';
+  window.scrollTo({top:0,behavior:'smooth'});
+  const msgs=["","🎧 Listen first — close your eyes and let the French sounds in. Then press Show Text.","🏠 Tap every card to hear it. Then try the blur quiz and write about YOUR home.","📚 -ER verbs are the foundation of French. Conjugate them until it feels automatic.","⚡ Gender sorting — type carefully. Check the ending patterns if you are unsure.","✏️ Texte à trous! Listen and fill the gaps. 3 listens minimum — that is the rule.","💬 Dialogue time! Practise well before the simulation. Then go for the timed version!","✍️ Your final writing challenge. Use the chunks. Take your time. Screenshot when done."];
+  if(msgs[n])showCoach(msgs[n],6000);
+}
+function buildDots(){
+  document.getElementById('dotsWrap').innerHTML=[1,2,3,4,5,6,7].map(i=>`<div class="dot ${i===1?'active':''}" id="dot${i}" onclick="goAct(${i})">${i}</div>`).join('');
+}
+function updDots(){for(let i=1;i<=7;i++){const d=document.getElementById('dot'+i);d.className='dot'+(i<curAct?' done':i===curAct?' active':'');}}
+
+// ============================================================
+// COACH
+// ============================================================
+function showCoach(msg,dur){
+  const el=document.getElementById('coachMsg');el.textContent=msg;el.classList.add('show');
+  if(cTimer)clearTimeout(cTimer);if(dur>0)cTimer=setTimeout(()=>el.classList.remove('show'),dur);
+}
+function toggleCoach(){
+  const el=document.getElementById('coachMsg');
+  const msgs=["🏠 Home vocabulary is one of the first things TCF examiners test. You are building your toolkit!","🎤 Every time you press Record, your pronunciation improves — even if you can't hear it yet.","✍️ Writing in French every day, even badly, is more valuable than a week of reading.","⭐ -ER verbs: -e,-es,-e,-ons,-ez,-ent. Say it until it becomes automatic.","💪 You have done more French today than most people do in a week. Keep going!","🔄 Redo every activity until it feels easy. Easy = automatic = exam marks.","📸 Don't forget to screenshot your writing and share in the community!"];
+  if(el.classList.contains('show'))el.classList.remove('show');
+  else showCoach(msgs[Math.floor(Math.random()*msgs.length)],5000);
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.addEventListener('load',()=>{
+  window.speechSynthesis.getVoices();
+  window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices();
+  buildDots();
+  renderVerbFills();
+  renderUbar('ubar','ubar-fb');
+  renderVocabGrids();
+  renderOwnFills();
+  renderVerbTable();
+  Object.keys(VERBS).forEach(renderConjFills);
+  renderLineMirrors();
+  renderGrouping();
+  renderTrous();
+  renderUbar('ubar2','ubar2fb');
+  renderDialogue();
+  renderChunks();
+  renderWriteMirrors();
+  renderQuiz();
+  setTimeout(()=>showCoach('🏠 Bienvenue Day 5! Today — listening first, then vocabulary, verbs, gender, texte à trous, dialogue simulation, and writing. A full French workout!',8000),800);
+});
+</script>
+</body>
+</html>
